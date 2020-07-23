@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="margin-top: 40px; display:flex; flex-wrap: wrap;">
+    <div class="row" style="display:flex; flex-wrap: wrap;">
+        <div class="col-4" style="min-width: 330px;">
+            <div class="card" >
+                    <img src="{{ MEDIA_URL }}{{ event.image }}" class="card-img-top" >
+                    <div class="card-body">
+                        <h5 class="card-title">{{ event.name }}</h5>
+                        <div class="row">
+                                <div class="col-4 py-1 px-lg-1 border bg-light">Ticket type</div>
+                                <div class="col-4 py-1 px-lg-1 border bg-light">Price</div>
+                                <div class="col-4 py-1 px-lg-1 border bg-light">Quantity available</div>
+                        </div>
+                        {% for ticket in tickets %}
+                            <div class="row">
+                                <div class="col-4 py-1 px-lg-1 border bg-light">{{ ticket.ticket_type }}</div>
+                                <div class="col-4 py-1 px-lg-1 border bg-light">{{ ticket.price }} $</div>
+                                <div class="col-4 py-1 px-lg-1 border bg-light">{{ ticket.count }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+            </div>
+        </div>
+        <div class="col">
+        
+            <h2>{{ event.name }} </h2>
+            <p class="text-wrap"> {{ event.desc }} </p>
+            <p>Date of the event: {{ event.date }} </p>
+            
+        </div>
+    </div>
+    <div style="margin: 20px auto;">
+        <form method="post" style="display: flex; flex-direction: column; justify-content: center;">
+            {% for ticket in tickets %}
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <label style="width: 140px;" class="input-group-text" for="inputGroupSelect01">{{ ticket.ticket_type }} {{ ticket.price }} $</label>
+                </div>
+                <input id="{{ ticket.id }}" type="number" min="0" placeholder="0">
+            </div>
+            {% endfor %}
+            {% csrf_token %}
+            <input class="btn btn-outline-success" type="submit" value="Buy tickets">
+        </form>
+    </div>
+</div>
+{% endblock %}

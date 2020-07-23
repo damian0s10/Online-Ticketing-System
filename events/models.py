@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Event(models.Model):
     CHOICES = (
@@ -14,7 +15,7 @@ class Event(models.Model):
     name = models.CharField(max_length=300)
     desc = models.TextField()
     date = models.DateTimeField()
-
+    image = models.FileField(upload_to='images')
 
 class TicketType(models.Model):
     ticket_type = models.CharField(max_length=200)
@@ -24,9 +25,7 @@ class TicketType(models.Model):
 
 
 class PurchasedTickets(models.Model):
-    first_name = models.CharField(max_length=200)
-    last_name = models.CharField(max_length=200)
-    email = models.EmailField(max_length=254)
+    user = models.ForeignKey(User, related_name='purchased_tickets', on_delete=models.CASCADE)
     tickets = models.ManyToManyField(TicketType, related_name="purchased_tickets", blank=False)
     total_price = models.DecimalField(max_digits=6, decimal_places=2)
 
