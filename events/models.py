@@ -17,15 +17,20 @@ class Event(models.Model):
     date = models.DateTimeField()
     image = models.FileField(upload_to='images')
 
-class TicketType(models.Model):
+class EventTickets(models.Model):
     ticket_type = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=6, decimal_places=2)
-    count = models.PositiveIntegerField()
+    number = models.PositiveIntegerField()
+    event = models.ForeignKey(Event, related_name='event_tickets', on_delete=models.CASCADE)
+
+class Ticket(models.Model):
+    user = models.ForeignKey(User, related_name='user', on_delete=models.CASCADE)
+    ticket_type = models.CharField(max_length=200)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+    quantity = models.PositiveIntegerField()
     event = models.ForeignKey(Event, related_name='tickets', on_delete=models.CASCADE)
 
-
-class PurchasedTickets(models.Model):
-    user = models.ForeignKey(User, related_name='purchased_tickets', on_delete=models.CASCADE)
-    tickets = models.ManyToManyField(TicketType, related_name="purchased_tickets", blank=False)
+class OrderTickets(models.Model):
+    tickets = models.ManyToManyField(Ticket, related_name="order_tickets", blank=False)
     total_price = models.DecimalField(max_digits=6, decimal_places=2)
 

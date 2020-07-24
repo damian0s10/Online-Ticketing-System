@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.views.generic.base import TemplateResponseMixin, View
-from .models import Event
+from .models import Event, EventTickets, Ticket
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView
 from .forms import UserCreateForm
@@ -35,6 +35,7 @@ class EventListView(TemplateResponseMixin, View):
 class EventDetailView(TemplateResponseMixin, View):
     template_name = 'events/detail.html'
     event = None
+    
 
     def dispatch(self, request, pk):
         self.event = get_object_or_404(Event, id=pk)
@@ -42,6 +43,22 @@ class EventDetailView(TemplateResponseMixin, View):
 
     def get(self, request, pk):
         return self.render_to_response({'event': self.event,
-                                        'tickets': self.event.tickets.all() })
+                                        'tickets': self.event.event_tickets.all() })
     
-    #def post(self, request, pk):
+    def post(self, request, pk):
+        tickets = []
+
+        for key, value in request.POST.items(): 
+            if key != 'csrfmiddlewaretoken':
+                event_ticket = get_object_or_404(EventTickets, id=key)
+                t = Ticket(user=request.user, 
+                           ticket_type=event_ticket.ticket_type,
+                           price=event_ticket.price,
+                           quantity=value,
+                           event=event_ticket.event)
+                t.save()
+                tickets.append(t)
+        print(tickets)
+
+        return self.render_to_response({'event': self.event,
+                                        'tickets': self.event.event_tickets.all() })

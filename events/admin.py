@@ -1,13 +1,17 @@
 from django.contrib import admin
-from .models import Event, PurchasedTickets, TicketType
+from .models import Event, OrderTickets, EventTickets, Ticket
 # Register your models here.
 
-@admin.register(TicketType)
+@admin.register(EventTickets)
 class TicketAdmin(admin.ModelAdmin):
-    list_display = ['ticket_type', 'price', 'count']
+    list_display = ['ticket_type', 'price', 'number']
+
+@admin.register(Ticket)
+class TicketAdmin(admin.ModelAdmin):
+    list_display = ['ticket_type', 'price', 'quantity', 'user']
 
 class TicketInLine(admin.TabularInline):
-    model = TicketType
+    model = EventTickets
     extra = 1
 
 @admin.register(Event)
