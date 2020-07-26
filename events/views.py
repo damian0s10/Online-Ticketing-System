@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.views.generic.base import TemplateResponseMixin, View
-from .models import Event, EventTickets, Ticket
+from .models import Event, EventTickets, Ticket, OrderTickets
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView
 from .forms import UserCreateForm
@@ -35,7 +35,16 @@ class EventListView(TemplateResponseMixin, View):
 class EventDetailView(TemplateResponseMixin, View):
     template_name = 'events/detail.html'
     event = None
-    
+    order = None
+
+    def calculate_price(self):
+        total_price = 0
+
+        for ticket in self.order.order.all():
+            total_price += ticket.quantity * ticket.event_ticket.price
+        
+        self.order.total_price = total_price
+        self.order.save()
 
     def dispatch(self, request, pk):
         self.event = get_object_or_404(Event, id=pk)
@@ -47,18 +56,25 @@ class EventDetailView(TemplateResponseMixin, View):
     
     def post(self, request, pk):
         tickets = []
+        self.order = OrderTickets(user=request.user)
+        self.order.save()
 
         for key, value in request.POST.items(): 
             if key != 'csrfmiddlewaretoken':
                 event_ticket = get_object_or_404(EventTickets, id=key)
-                t = Ticket(user=request.user, 
-                           ticket_type=event_ticket.ticket_type,
-                           price=event_ticket.price,
-                           quantity=value,
-                           event=event_ticket.event)
-                t.save()
-                tickets.append(t)
+                if int(value) <= event_ticket.number:
+                    t = Ticket(quantity=value,
+                            event_ticket=event_ticket,
+                            order=self.order)
+                    t.save()
+                    tickets.append(t)
+                else: 
+                    print("error")
+                    self.order.delete()
+                    return self.render_to_response({'event': self.event,
+                                        'tickets': self.event.event_tickets.all() })
         print(tickets)
-
+        self.calculate_price()
+        
         return self.render_to_response({'event': self.event,
                                         'tickets': self.event.event_tickets.all() })

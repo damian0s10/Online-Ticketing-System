@@ -23,14 +23,13 @@ class EventTickets(models.Model):
     number = models.PositiveIntegerField()
     event = models.ForeignKey(Event, related_name='event_tickets', on_delete=models.CASCADE)
 
-class Ticket(models.Model):
-    user = models.ForeignKey(User, related_name='user', on_delete=models.CASCADE)
-    ticket_type = models.CharField(max_length=200)
-    price = models.DecimalField(max_digits=6, decimal_places=2)
-    quantity = models.PositiveIntegerField()
-    event = models.ForeignKey(Event, related_name='tickets', on_delete=models.CASCADE)
-
 class OrderTickets(models.Model):
-    tickets = models.ManyToManyField(Ticket, related_name="order_tickets", blank=False)
-    total_price = models.DecimalField(max_digits=6, decimal_places=2)
+    user = models.ForeignKey(User, related_name='user', on_delete=models.CASCADE)
+    total_price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+
+class Ticket(models.Model):
+    quantity = models.PositiveIntegerField()
+    event_ticket = models.ForeignKey(EventTickets, related_name='tickets', on_delete=models.CASCADE)
+    order = models.ForeignKey(OrderTickets, related_name='order', on_delete=models.CASCADE)
+
 
