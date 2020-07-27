@@ -7,8 +7,14 @@
         - POSTGRES_DB=postgres
         - POSTGRES_USER=postgres
         - POSTGRES_PASSWORD=postgres
+      container_name: db
+
+    redis:
+      image: "redis:alpine"
+      container_name: redis
+    
+    
     web:
-      #entrypoint: /entrypoint.sh
       build: .
       command: python manage.py runserver 0.0.0.0:8000
       volumes:
@@ -17,4 +23,14 @@
         - "8000:8000"
       depends_on:
         - db
-    
+      container_name: web
+
+    celery:
+      build: .
+      command: celery -A tickets worker -l info
+      volumes:
+        - .:/app
+      depends_on: 
+        - db
+        - redis
+      container_name: celery

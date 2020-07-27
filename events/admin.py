@@ -30,6 +30,6 @@ class PurchasedTicketInLine(admin.TabularInline):
 
 @admin.register(OrderTickets)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('user', 'total_price')
+    list_display = ('id', 'user', 'total_price', 'paid')
     inlines = [PurchasedTicketInLine]
     

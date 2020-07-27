@@ -6,15 +6,17 @@ from events import views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('events/', include('events.urls')),
-    path('',
+     path('admin/', admin.site.urls),
+     path('events/', include('events.urls')),
+     path('login/', auth_views.LoginView.as_view(redirect_authenticated_user=True), 
+         name='login'),
+     path('logout/', auth_views.LogoutView.as_view(), 
+         name='logout'),
+     path('payment/', include('payment.urls', namespace='payment')),
+     path('',
          views.Dashboard.as_view(),
          name='dashboard'),
-    path('login/', auth_views.LoginView.as_view(redirect_authenticated_user=True), 
-         name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), 
-         name='logout'),
+     
 ]
 
 if settings.DEBUG:

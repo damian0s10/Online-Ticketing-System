@@ -1,0 +1,27 @@
+.alert {
+    margin: 0 auto;
+}
+h1 {
+    text-align: center;
+    margin-top: 30px;
+}
+#payment {
+    border: 1px lightgray solid;
+    max-width: 400px;
+    padding: 20px;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+#payment .input-payment {
+    background-color: #e9ffff;
+    height: 30px; 
+}
+
+#payment label {
+    margin-top: 10px;
+}
+#payment input[type=submit]{
+    margin: 10px auto;
+}

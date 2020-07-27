@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'events',
+    'payment.apps.PaymentConfig',
 ]
 
 MIDDLEWARE = [
@@ -129,6 +130,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+  os.path.join(BASE_DIR, 'static'),
+)
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
@@ -136,7 +140,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-
+BRAINTREE_MERCHANT_ID = 'p8rgw5yfvbsh45dg'
+BRAINTREE_PUBLIC_KEY = 'bkmsb2z2thyjcv28'
+BRAINTREE_PRIVETE_KEY = '12cbf2e596fc85a502c1d25431bd0769'
 
 from braintree import Configuration, Environment
 Configuration.configure(
@@ -145,3 +151,9 @@ Configuration.configure(
     BRAINTREE_PUBLIC_KEY,
     BRAINTREE_PRIVETE_KEY
 )
+
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
