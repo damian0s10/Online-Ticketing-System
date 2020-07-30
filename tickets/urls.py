@@ -16,6 +16,7 @@ urlpatterns = [
      path('',
          views.Dashboard.as_view(),
          name='dashboard'),
+    
      
 ]
 

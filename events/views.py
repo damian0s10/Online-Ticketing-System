@@ -7,7 +7,12 @@ from .forms import UserCreateForm
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from .tasks import hello
+from .tasks import send_order_confirmation
+import weasyprint
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.http import HttpResponse
+from django.contrib.admin.views.decorators import staff_member_required
 
 class UserRegistrationView(CreateView):
     template_name='registration/registration.html'
@@ -31,7 +36,6 @@ class EventListView(TemplateResponseMixin, View):
     template_name = 'events/list.html'
     
     def get(self, request, event):
-        hello.delay()
         events = Event.objects.filter(categories=event)
         return self.render_to_response({'events': events})
 
@@ -61,9 +65,13 @@ class EventDetailView(TemplateResponseMixin, View):
     def post(self, request, pk):
         if request.user.is_authenticated:
             tickets = []
+
+            # Create an order
             self.order = OrderTickets(user=request.user)
             self.order.save()
 
+            
+            # Adding tickets to the order
             for key, value in request.POST.items(): 
                 
                 if key != 'csrfmiddlewaretoken' and value:
@@ -73,8 +81,8 @@ class EventDetailView(TemplateResponseMixin, View):
                                 event_ticket=event_ticket,
                                 order=self.order)
                         t.save()
-                        # event_ticket.number -= int(value)
-                        # event_ticket.save()
+                        event_ticket.number -= int(value)
+                        event_ticket.save()
                         tickets.append(t)
                     else: 
                         self.order.delete()
@@ -84,10 +92,39 @@ class EventDetailView(TemplateResponseMixin, View):
             if tickets:
                 self.calculate_price()
                 request.session['order_id'] = self.order.id
+                
+                # Sending an email confirming the order
+                send_order_confirmation.delay(self.order.id)
+            
                 return redirect(reverse('payment:process'))
+            
             return self.render_to_response({'event': self.event,
                                         'tickets': self.event.event_tickets.all().order_by('price'),
                                         'inaccessible': True})
+
         return self.render_to_response({'event': self.event,
                                         'tickets': self.event.event_tickets.all().order_by('price'),
                                         'not_authenticaded': True})
+
+
+
+# @staff_member_required
+# def admin_order_detail(request, order_id):
+#     order = get_object_or_404(OrderTickets, id=order_id)
+#     return render(request,
+#                 'admin/order/detail.html',
+#                 {'order': order})
+
+@staff_member_required
+def admin_order_view(request, order_id):
+    order = get_object_or_404(OrderTickets, id=order_id)
+    html = render_to_string('admin/order/ticket_pdf.html', 
+                            {'order':order,
+                             'tickets':order.order.all()})
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'filename=\"order_{}.pdf"'.format(order.id)
+    weasyprint.HTML(string=html).write_pdf(response, 
+        stylesheets=[weasyprint.CSS(
+            settings.STATIC_ROOT + 'pdf.css'
+        )])
+    return response

@@ -1,0 +1,30 @@
+<html>
+<body>
+    <h1>Tickets</h1>
+    <h1>Event: {{ tickets.0.event_ticket.event.name }}</h1>
+    <h2>Date: {{ tickets.0.event_ticket.event.date }}</h2>
+    <p> Order number: {{ order.id }} </p>
+
+    <p>{{ order.user.first_name }} {{ order.user.last_name }}</p>
+    <p>{{ order.user.email }}</p>
+    
+    
+    
+
+    <table>
+        <tr>
+            <th>Ticket type</th>
+            <th>Price</th>
+            <th>Quantity</th>
+        </tr>
+        {% for ticket in tickets %}
+        <tr>
+            <td>{{ ticket.event_ticket.ticket_type }}</td>
+            <td>{{ ticket.event_ticket.price }} $</td>
+            <td>{{ ticket.quantity }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p>Total price: {{ order.total_price }} $</p>
+</body>
+</html>

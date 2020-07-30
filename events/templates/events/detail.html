@@ -36,6 +36,11 @@
             There aren't enough tickets.
         </div>
     {% endif %}
+    {% if not_authenticaded %}
+        <div class="alert alert-warning" role="alert">
+            You have to <a href="{% url "login" %}"> sign in</a>.
+        </div>
+    {% endif %}
     <div style="margin: 20px auto;">
         <form method="post" style="display: flex; flex-direction: column; justify-content: center;">
             {% for ticket in tickets %}
@@ -50,10 +55,6 @@
             <input class="btn btn-outline-success" type="submit" value="Buy tickets">
         </form>
     </div>
-    {% if not_authenticaded %}
-        <div class="alert alert-warning" role="alert">
-            You have to <a href="{% url "login" %}"> sign in</a>.
-        </div>
-    {% endif %}
+    
 </div>
 {% endblock %}

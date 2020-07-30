@@ -1,0 +1,19 @@
+h1, h2 {
+    text-align: center;
+    margin: 30px;
+}
+p {
+    margin: 20px;
+}
+table {
+    margin: 30px auto;
+    border: 1px solid black;
+    
+}
+td, th {
+    width: 180px;
+    padding: 10px;
+}
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
