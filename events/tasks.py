@@ -1,7 +1,7 @@
 from celery import task
 from django.core.mail import send_mail, EmailMessage
 from django.shortcuts import get_object_or_404
-from .models import OrderTickets
+from .models import OrderTickets, EventTickets
 from django.template.loader import render_to_string
 from io import BytesIO
 import weasyprint
@@ -44,3 +44,14 @@ def send_tickets(order_id):
 
     # Send e-mail
     email.send()
+
+@task
+def include_unfinished_payment(order_id):
+    order = get_object_or_404(OrderTickets, id = order_id)
+    if not order.included:
+        for ticket in order.order.all():
+            event_ticket = get_object_or_404(EventTickets, id=ticket.event_ticket.id)
+            event_ticket.number += ticket.quantity
+            event_ticket.save()
+        order.included = True
+        order.save()

@@ -7,12 +7,13 @@ from .forms import UserCreateForm
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from .tasks import send_order_confirmation
+from .tasks import send_order_confirmation, include_unfinished_payment
 import weasyprint
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
+from datetime import datetime, timedelta
 
 class UserRegistrationView(CreateView):
     template_name='registration/registration.html'
@@ -95,7 +96,11 @@ class EventDetailView(TemplateResponseMixin, View):
                 
                 # Sending an email confirming the order
                 send_order_confirmation.delay(self.order.id)
-            
+
+                # Checking whether the not successful payment the number of tickets has been refunded 
+                
+                include_unfinished_payment.apply_async(args=[self.order.id], countdown=300)
+
                 return redirect(reverse('payment:process'))
             
             return self.render_to_response({'event': self.event,
@@ -108,12 +113,6 @@ class EventDetailView(TemplateResponseMixin, View):
 
 
 
-# @staff_member_required
-# def admin_order_detail(request, order_id):
-#     order = get_object_or_404(OrderTickets, id=order_id)
-#     return render(request,
-#                 'admin/order/detail.html',
-#                 {'order': order})
 
 @staff_member_required
 def admin_order_view(request, order_id):

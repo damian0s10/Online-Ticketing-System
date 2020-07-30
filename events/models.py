@@ -28,7 +28,9 @@ class OrderTickets(models.Model):
     total_price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     braintree_id = models.CharField(max_length=150, blank=True)
     paid = models.BooleanField(default=False) 
-    
+    created = models.DateTimeField(auto_now_add=True)
+    included = models.BooleanField(default=False)
+
 class Ticket(models.Model):
     quantity = models.PositiveIntegerField()
     event_ticket = models.ForeignKey(EventTickets, related_name='tickets', on_delete=models.CASCADE)

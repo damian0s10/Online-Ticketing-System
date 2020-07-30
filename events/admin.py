@@ -24,7 +24,6 @@ class EventAdmin(admin.ModelAdmin):
     inlines = [TicketInLine]
 
 
-
 class PurchasedTicketInLine(admin.TabularInline):
     model = Ticket
     extra = 0
@@ -35,7 +34,7 @@ order_pdf.short_desciption = 'Tickets'
 
 @admin.register(OrderTickets)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'total_price', 'paid', order_pdf)
+    list_display = ('id', 'user', 'total_price', 'paid', 'created', 'included', order_pdf)
     inlines = [PurchasedTicketInLine]
     
     

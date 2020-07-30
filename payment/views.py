@@ -8,7 +8,7 @@ from events.tasks import send_tickets
 def payment_process(request):
     order_id = request.session.get('order_id')
     order = get_object_or_404(OrderTickets, id = order_id)
-
+    
     if request.method == 'POST':
         # Get token
         nonce = request.POST.get('payment_method_nonce', None)
@@ -24,17 +24,22 @@ def payment_process(request):
         # Success payment
         if result.is_success:
             order.paid = True
+            order.included = True
             order.braintree_id = result.transaction.id
             order.save()
             send_tickets(order.id)
             return redirect('payment:done')
+        
         # Payment not successful
         else:
             # Adding unpurchased tickets
-            for ticket in order.order.all():
-                event_ticket = get_object_or_404(EventTickets, id=ticket.event_ticket.id)
-                event_ticket.number += ticket.quantity
-                event_ticket.save()
+            if not order.included:
+                for ticket in order.order.all():
+                    event_ticket = get_object_or_404(EventTickets, id=ticket.event_ticket.id)
+                    event_ticket.number += ticket.quantity
+                    event_ticket.save()
+                order.included = True
+                order.save()
             return redirect('payment:canceled')
     else:
         client_token = braintree.ClientToken.generate()
@@ -42,6 +47,7 @@ def payment_process(request):
                       'payment/process.html',
                       {'order': order,
                       'client_token': client_token})
+
 
 @login_required
 def payment_done(request):
