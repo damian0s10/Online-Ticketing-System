@@ -42,19 +42,36 @@
         </div>
     {% endif %}
     <div style="margin: 20px auto;">
-        <form method="post" style="display: flex; flex-direction: column; justify-content: center;">
+        <form id="ticket-form" method="post" onsubmit="return validateForm(event)" style="display: flex; flex-direction: column; justify-content: center;">
             {% for ticket in tickets %}
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
                     <label style="width: 140px;" class="input-group-text" for="inputGroupSelect01">{{ ticket.ticket_type }} {{ ticket.price }} $</label>
                 </div>
-                <input name="{{ ticket.id }}" type="number" min="0" placeholder="0">
+                <input  class="ticket-quantity" name="{{ ticket.id }}" type="number" min="0" placeholder="0">
             </div>
             {% endfor %}
             {% csrf_token %}
-            <input class="btn btn-outline-success" type="submit" value="Buy tickets">
+            <button id="submit_btn" class="btn btn-outline-success"\>Buy tickets</button>
         </form>
     </div>
     
 </div>
+<script>
+    document.getElementById("submit_btn").onclick = submitAction;
+
+    function submitAction(e)
+    {
+        e.preventDefault();
+        const inputs = document.getElementsByClassName("ticket-quantity");
+        const form = document.getElementById("ticket-form");
+
+        for (let input of inputs) {
+            if (input.value) {
+                form.submit();
+            }
+        }
+    }
+    
+</script>
 {% endblock %}
