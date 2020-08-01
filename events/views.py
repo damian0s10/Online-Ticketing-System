@@ -16,6 +16,11 @@ from django.contrib.admin.views.decorators import staff_member_required
 from datetime import datetime, timedelta
 from .documents import EventDocument
 from django.utils import timezone
+import redis
+
+r = redis.StrictRedis(host=settings.REDIS_HOST,
+                              port=settings.REDIS_PORT,
+                              db=settings.REDIS_DB)
 
 class UserRegistrationView(CreateView):
     template_name='registration/registration.html'
@@ -34,13 +39,25 @@ class Dashboard(TemplateResponseMixin, View):
 
     def get(self, request):
         query = request.GET.get('search')
-        
+        event_most_viewed = None
+        events = None
         if query:
             events = EventDocument.search().query("match", name=query).to_queryset().filter(date__gte=timezone.now())
+            
         else:
-            events = None
+            # Get a dictionary of the most displayed events
+            event_ranking = r.zrange('event_ranking', 0, -1, desc=True)
+            print(event_ranking)
 
-        return self.render_to_response({'search':events})
+            # Get the most displayed events
+            event_ids = [int(id) for id in event_ranking]
+            event_most_viewed = list(Event.objects.filter(date__gte=timezone.now()).filter(id__in=event_ids))[:6]
+            print(event_most_viewed)
+            event_most_viewed.sort(key=lambda x: event_ids.index(x.id))
+            print(event_most_viewed)
+        return self.render_to_response({'search':events,
+                                        'most_viewed':event_most_viewed,
+                                        })
 
 class EventListView(TemplateResponseMixin, View):
     template_name = 'events/list.html'
@@ -71,11 +88,17 @@ class EventDetailView(TemplateResponseMixin, View):
 
     def get(self, request, pk):
         if self.event.date > timezone.now():
-            return self.render_to_response({'event': self.event,
-                            'tickets': self.event.event_tickets.all().order_by('price') })
+            
+            total_views = r.incr('event:{}:views'.format(self.event.id))
+            r.zincrby('event_ranking', 1, self.event.id)
+            context = {'event': self.event,
+                       'tickets': self.event.event_tickets.all().order_by('price'),
+                       'total_views': total_views
+                        }
+            return self.render_to_response(context)
         else:
             return redirect(reverse('events:dashboard'))
-            
+
     def post(self, request, pk):
         if request.user.is_authenticated:
             tickets = []

@@ -5,12 +5,12 @@
     <div class="container" style="display: flex; flex-wrap: wrap; justify-content: space-around;">
     {% for event in events %}
         <div class="card" style="width: 18rem; margin: 10px;">
-            <img src="{{ MEDIA_URL }}{{ event.image }}" class="card-img-top" >
+            <img src="{{ MEDIA_URL }}{{ event.image }}" style="height: 160px;" class="card-img-top" >
             <div class="card-body">
                 <h5 class="card-title">{{ event.name }}</h5>
                 <p class="card-text">{{ event.date }}</p>
-                <p class="card-text">{{ event.desc|truncatechars:50 }}</p>
-                <a href="{% url "events:event_detail_view" event.id %}" class="btn btn-success">Check</a>
+                <p class="card-text">{{ event.desc|truncatechars:60 }}</p>
+                <a href="{% url "events:event_detail_view" event.id %}" style="display: block;" class="btn btn-success">Check</a>
             </div>
         </div>
     {% endfor %}
