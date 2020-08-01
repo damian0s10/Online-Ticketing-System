@@ -14,6 +14,8 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
 from datetime import datetime, timedelta
+from .documents import EventDocument
+from django.utils import timezone
 
 class UserRegistrationView(CreateView):
     template_name='registration/registration.html'
@@ -31,13 +33,22 @@ class Dashboard(TemplateResponseMixin, View):
     template_name = 'dashboard.html'
 
     def get(self, request):
-        return self.render_to_response({})
+        query = request.GET.get('search')
+        
+        if query:
+            events = EventDocument.search().query("match", name=query).to_queryset().filter(date__gte=timezone.now())
+        else:
+            events = None
+
+        return self.render_to_response({'search':events})
 
 class EventListView(TemplateResponseMixin, View):
     template_name = 'events/list.html'
     
     def get(self, request, event):
-        events = Event.objects.filter(categories=event)
+        
+        events = Event.objects.filter(categories=event).filter(date__gte=timezone.now())
+        
         return self.render_to_response({'events': events})
 
 class EventDetailView(TemplateResponseMixin, View):
@@ -59,10 +70,12 @@ class EventDetailView(TemplateResponseMixin, View):
         return super().dispatch(request,pk)
 
     def get(self, request, pk):
-        
-        return self.render_to_response({'event': self.event,
-                                        'tickets': self.event.event_tickets.all().order_by('price') })
-    
+        if self.event.date > timezone.now():
+            return self.render_to_response({'event': self.event,
+                            'tickets': self.event.event_tickets.all().order_by('price') })
+        else:
+            return redirect(reverse('events:dashboard'))
+            
     def post(self, request, pk):
         if request.user.is_authenticated:
             tickets = []

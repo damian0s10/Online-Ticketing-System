@@ -16,3 +16,5 @@ migrate:
 
 makemigrations:
 	docker-compose run --rm web python manage.py makemigrations
+
+#manage.py search_index --rebuild

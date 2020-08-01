@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'events',
     'payment.apps.PaymentConfig',
+    'django_elasticsearch_dsl',
 ]
 
 MIDDLEWARE = [
@@ -130,9 +131,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATICFILES_DIRS = (
-#   os.path.join(BASE_DIR, 'static'),
-# )
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 MEDIA_URL = '/media/'
@@ -164,3 +162,9 @@ EMAIL_HOST_USER = 'onlinetickets56@gmail.com'
 EMAIL_HOST_PASSWORD = 'tickets123'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'elasticsearch:9200'
+    },
+}
