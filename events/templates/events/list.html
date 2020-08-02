@@ -3,16 +3,18 @@
 {% block content %}
     
     <div class="container" style="display: flex; flex-wrap: wrap; justify-content: space-around;">
+    
     {% for event in events %}
         <div class="card" style="width: 18rem; margin: 10px;">
             <img src="{{ MEDIA_URL }}{{ event.image }}" style="height: 160px;" class="card-img-top" >
-            <div class="card-body">
-                <h5 class="card-title">{{ event.name }}</h5>
-                <p class="card-text">{{ event.date }}</p>
-                <p class="card-text">{{ event.desc|truncatechars:60 }}</p>
+            <div style="padding: 10px;" class="card-body">
+                <h5 style="text-align: center; margin-bottom: 5px;" class="card-title">{{ event.name }}</h5>
+                <p style="text-align: center; margin-bottom: 5px;" class="card-text">{{ event.date }}</p>
                 <a href="{% url "events:event_detail_view" event.id %}" style="display: block;" class="btn btn-success">Check</a>
             </div>
         </div>
     {% endfor %}
+    
     </div>
+    {% include "pagination.html" with page=events %}
 {% endblock %}

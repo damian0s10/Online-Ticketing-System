@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="display: flex; flex-direction: column; justify-content: space-around;">
+    <a href="{% url "events:profile_update" %}" class= "btn btn-success" style="width: 200px; color: white; margin: 80px auto 20px auto;" >Edit profile</a>
+    <a href="{% url "events:user_tickets" %}" class="btn btn-success" style="width: 200px; color: white; margin: 20px auto;">My tickets</a>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="display: flex; flex-direction: column; justify-content: space-around;">
+   <div style="margin-top: 20px;" class="row">
+        <div class="col-3 py-1 px-lg-1 border bg-light">Date of order</div>
+        <div class="col-1 py-1 px-lg-1 border bg-light">Total price</div>
+        <div class="col-5 py-1 px-lg-1 border bg-light">Event</div>
+        <div class="col-1 py-1 px-lg-1 border bg-light">Paid</div>
+        <div class="col-2 py-1 px-lg-1 border bg-light">Download the ticket</div>
+    </div>
+   {% for order in orders %}
+    <div class="row">
+        <div class="col-3 py-1 px-lg-1 border bg-light">{{ order.created }}</div>
+        <div class="col-1 py-1 px-lg-1 border bg-light">{{ order.total_price }} $</div>
+        <div class="col-5 py-1 px-lg-1 border bg-light">
+        {% with order.order.all|first as ticket %} {{ ticket.event_ticket.event.name }} | {{ ticket.event_ticket.event.date }}{% endwith %}
+        </div>
+        <div class="col-1 py-1 px-lg-1 border bg-light">{% if order.paid %}Yes{% else %}No{% endif %}</div>
+        <div class="col-2 py-1 px-lg-1 border bg-light">
+            {% if order.paid %}
+            <a style="width: 100%; padding: 3px;" class="btn btn-outline-success my-2 my-sm-0" href="{% url "events:download_ticket" order.id%}">
+            Download</a>
+            {% endif %}
+        </div>
+    </div>
+
+   {% endfor %}
+</div>
+{% endblock %}

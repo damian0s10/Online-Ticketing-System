@@ -3,7 +3,8 @@ from django.views.generic.base import TemplateResponseMixin, View
 from .models import Event, EventTickets, Ticket, OrderTickets
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView
-from .forms import UserCreateForm
+from .forms import UserCreateForm, UpdateProfileForm
+from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -17,6 +18,10 @@ from datetime import datetime, timedelta
 from .documents import EventDocument
 from django.utils import timezone
 import redis
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import update_session_auth_hash
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 
 r = redis.StrictRedis(host=settings.REDIS_HOST,
                               port=settings.REDIS_PORT,
@@ -34,6 +39,8 @@ class UserRegistrationView(CreateView):
         login(self.request, user)
         return result
 
+
+
 class Dashboard(TemplateResponseMixin, View):
     template_name = 'dashboard.html'
 
@@ -43,21 +50,66 @@ class Dashboard(TemplateResponseMixin, View):
         events = None
         if query:
             events = EventDocument.search().query("match", name=query).to_queryset().filter(date__gte=timezone.now())
-            
+            paginator = Paginator(events, 6)
+            page = request.GET.get('page')
+
+            try:
+                events = paginator.page(page)
+            except PageNotAnInteger:
+                events = paginator.page(1)
+            except EmptyPage:
+                events= paginator.page(paginator.num_pages)
         else:
             # Get a dictionary of the most displayed events
             event_ranking = r.zrange('event_ranking', 0, -1, desc=True)
-            print(event_ranking)
 
             # Get the most displayed events
             event_ids = [int(id) for id in event_ranking]
             event_most_viewed = list(Event.objects.filter(date__gte=timezone.now()).filter(id__in=event_ids))[:6]
-            print(event_most_viewed)
             event_most_viewed.sort(key=lambda x: event_ids.index(x.id))
-            print(event_most_viewed)
+
         return self.render_to_response({'search':events,
                                         'most_viewed':event_most_viewed,
                                         })
+
+
+class ProfileView(LoginRequiredMixin, TemplateResponseMixin, View):
+    template_name = 'profile/detail.html'
+    
+    def get(self, request):
+        return self.render_to_response({})
+
+
+class ProfileUpdateView(LoginRequiredMixin, TemplateResponseMixin,View):
+    template_name = 'profile/update_profile.html'
+
+    def get(self, request):
+        formset = UpdateProfileForm(instance=request.user)
+        return self.render_to_response({'formset': formset})
+
+    def post(self, request):
+        formset = UpdateProfileForm(request.POST, instance=request.user)
+        if formset.is_valid():
+            formset.save()
+            return redirect('events:profile_update')
+        return self.render_to_response({'formset': formset})
+
+
+class ChangePasswordView(LoginRequiredMixin, TemplateResponseMixin,View):
+    template_name = 'profile/change_password.html'
+
+    def get(self, request, *args, **kwargs):
+        form = PasswordChangeForm(user=request.user)
+        return self.render_to_response({'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = PasswordChangeForm(data=request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, form.user)
+            return redirect('events:profile_view')
+        return self.render_to_response({'form': form})
+
 
 class EventListView(TemplateResponseMixin, View):
     template_name = 'events/list.html'
@@ -65,8 +117,20 @@ class EventListView(TemplateResponseMixin, View):
     def get(self, request, event):
         
         events = Event.objects.filter(categories=event).filter(date__gte=timezone.now())
-        
+        paginator = Paginator(events, 6)
+        page = request.GET.get('page')
+
+        try:
+            events = paginator.page(page)
+        except PageNotAnInteger:
+            events = paginator.page(1)
+        except EmptyPage:
+            events= paginator.page(paginator.num_pages)
+
         return self.render_to_response({'events': events})
+
+
+
 
 class EventDetailView(TemplateResponseMixin, View):
     template_name = 'events/detail.html'
@@ -149,6 +213,36 @@ class EventDetailView(TemplateResponseMixin, View):
 
 
 
+class UserTicketsView(LoginRequiredMixin, TemplateResponseMixin,View):
+    template_name = 'profile/tickets.html'
+
+
+    def get(self, request):
+        orders = OrderTickets.objects.filter(user=request.user).order_by('-created')
+        print(orders)
+        
+        context = {'orders':orders}
+        return self.render_to_response(context)
+
+
+
+@login_required
+def download_ticket(request, order_id):
+    order = get_object_or_404(OrderTickets, id=order_id)
+    if order.user == request.user and order.paid:
+        html = render_to_string('admin/order/ticket_pdf.html', 
+                                {'order':order,
+                                'tickets':order.order.all()})
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'filename=\"order_{}.pdf"'.format(order.id)
+        weasyprint.HTML(string=html).write_pdf(response, 
+            stylesheets=[weasyprint.CSS(
+                settings.STATIC_ROOT + 'pdf.css'
+            )])
+        return response
+    else:
+        return redirect('events:dashboard')
+
 
 @staff_member_required
 def admin_order_view(request, order_id):
@@ -163,3 +257,6 @@ def admin_order_view(request, order_id):
             settings.STATIC_ROOT + 'pdf.css'
         )])
     return response
+
+
+
