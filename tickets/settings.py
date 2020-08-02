@@ -139,9 +139,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-BRAINTREE_MERCHANT_ID = 'p8rgw5yfvbsh45dg'
-BRAINTREE_PUBLIC_KEY = 'bkmsb2z2thyjcv28'
-BRAINTREE_PRIVETE_KEY = '12cbf2e596fc85a502c1d25431bd0769'
+BRAINTREE_MERCHANT_ID = os.getenv('BRAINTREE_MERCHANT_ID')
+BRAINTREE_PUBLIC_KEY = os.getenv('BRAINTREE_PUBLIC_KEY')
+BRAINTREE_PRIVETE_KEY = os.getenv('BRAINTREE_PRIVETE_KEY')
 
 from braintree import Configuration, Environment
 Configuration.configure(
@@ -162,10 +162,10 @@ REDIS_PORT = 6379
 REDIS_DB = 0
 
 
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'onlinetickets56@gmail.com'
-EMAIL_HOST_PASSWORD = 'tickets123'
-EMAIL_PORT = 587
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
 EMAIL_USE_TLS = True
 
 ELASTICSEARCH_DSL = {
