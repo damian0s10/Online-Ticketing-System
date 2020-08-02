@@ -1,6 +1,7 @@
 # Online ticket sales
 
 The application is used to sell tickets for events. It is based on **Django 3**. **Bootstrap 4** was used for the appearance of the application. 
+The database is **PostgreSQL**.
 Admin has the ability to add and edit events and tickets. The user who is not logged in can watch the events, but have to register to buy tickets.
 The app can be improved by adding a user who can register as an event organizer who will be add and edit events.
 After selecting specific tickets, the customer goes to the payment made with **Braintree**.
