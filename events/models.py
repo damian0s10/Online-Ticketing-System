@@ -13,6 +13,7 @@ class Event(models.Model):
     )
     categories = models.CharField(max_length=20, choices=CHOICES)
     name = models.CharField(max_length=300)
+    place = models.CharField(max_length=200, blank=True)
     desc = models.TextField()
     date = models.DateTimeField()
     image = models.FileField(upload_to='images')

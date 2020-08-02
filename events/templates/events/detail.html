@@ -28,8 +28,10 @@
         
             <h2>{{ event.name }} </h2>
             <p>Total views: {{ total_views }}</p>
-            <p class="text-wrap"> {{ event.desc }} </p>
             <p>Date of the event: {{ event.date }} </p>
+            <p>Place: {{ event.place }} </p>
+            <p class="text-wrap"> {{ event.desc }} </p>
+            
             
         </div>
     </div>
@@ -48,7 +50,7 @@
             {% for ticket in tickets %}
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
-                    <label style="width: 140px;" class="input-group-text" for="inputGroupSelect01">{{ ticket.ticket_type }} {{ ticket.price }} $</label>
+                    <label style="width: 160px;" class="input-group-text" for="inputGroupSelect01">{{ ticket.ticket_type }} {{ ticket.price }} $</label>
                 </div>
                 <input  class="ticket-quantity" name="{{ ticket.id }}" type="number" min="0" placeholder="0">
             </div>
