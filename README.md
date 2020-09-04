@@ -24,6 +24,7 @@ EMAIL_HOST_USER=??
 EMAIL_HOST_PASSWORD=??
 EMAIL_PORT=??
 - run -> make build,
+- run -> make migrate,
 - get data from fixtures, run -> make loaddata ,
 - run the app -> make run,
 - superuser is already created, you can log in by username: admin | password: admin.
