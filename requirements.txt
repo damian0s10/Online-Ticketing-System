@@ -1,7 +1,7 @@
 Django>=3.0
 psycopg2-binary>=2.8
 braintree==4.2.0
-celery==4.4.1
+celery==5.2.2
 redis==3.2.0
 WeasyPrint==0.42.3
 django-elasticsearch-dsl
